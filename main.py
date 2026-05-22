@@ -7,9 +7,9 @@ import requests
 import os
 from datetime import datetime
 
-# =====================================
-# CONFIG
-# =====================================
+# =========================================
+# APP CONFIG
+# =========================================
 
 app = FastAPI()
 
@@ -21,17 +21,17 @@ API_KEY = os.getenv("GROQ_API_KEY")
 
 GENERATED_FOLDER = "generated_sites"
 
-# =====================================
-# CREATE FOLDERS
-# =====================================
+# =========================================
+# FOLDERS
+# =========================================
 
 os.makedirs(GENERATED_FOLDER, exist_ok=True)
 os.makedirs("templates", exist_ok=True)
 os.makedirs("static", exist_ok=True)
 
-# =====================================
+# =========================================
 # TEMPLATES
-# =====================================
+# =========================================
 
 templates = Jinja2Templates(directory="templates")
 
@@ -41,9 +41,9 @@ app.mount(
     name="static"
 )
 
-# =====================================
-# HOME PAGE
-# =====================================
+# =========================================
+# HOME
+# =========================================
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -53,9 +53,9 @@ async def home(request: Request):
         name="index.html"
     )
 
-# =====================================
+# =========================================
 # GENERATE WEBSITE
-# =====================================
+# =========================================
 
 @app.post("/generate", response_class=HTMLResponse)
 async def generate_website(
@@ -64,17 +64,16 @@ async def generate_website(
 ):
 
     full_prompt = f"""
-Create a very small modern responsive landing page.
+Create a beautiful modern responsive landing page.
 
-Website Idea:
+Website idea:
 {prompt}
 
-Rules:
+Requirements:
 - Return ONLY raw HTML
 - Include inline CSS
-- No JavaScript
 - Responsive design
-- Clean professional styling
+- Modern UI
 - No markdown
 - No explanations
 """
@@ -97,50 +96,91 @@ Rules:
                         "role": "user",
                         "content": full_prompt
                     }
-                ]
+                ],
+                "temperature": 0.7,
+                "max_tokens": 4000
             },
 
             timeout=120
+
         )
 
-        generated_html = response.json()["choices"][0]["message"]["content"]
+        # =========================================
+        # CHECK RESPONSE
+        # =========================================
 
-        if "<html" not in generated_html.lower():
+        resp_json = response.json()
+
+        # DEBUG PRINT
+        print(resp_json)
+
+        # =========================================
+        # SAFE EXTRACTION
+        # =========================================
+
+        generated_html = ""
+
+        if (
+            "choices" in resp_json
+            and len(resp_json["choices"]) > 0
+        ):
+
+            generated_html = (
+                resp_json["choices"][0]
+                ["message"]["content"]
+            )
+
+        else:
 
             generated_html = f"""
             <html>
             <body style="background:#111;color:white;font-family:Arial;padding:40px;">
-                <h1>Generated Response</h1>
-                <pre>{generated_html}</pre>
+                <h1>Generation Error</h1>
+                <pre>{resp_json}</pre>
             </body>
             </html>
             """
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # =========================================
+        # SAVE GENERATED FILE
+        # =========================================
 
-        filename = f"{GENERATED_FOLDER}/site_{timestamp}.html"
+        timestamp = datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
 
-        with open(filename, "w", encoding="utf-8") as f:
+        filename = (
+            f"{GENERATED_FOLDER}/site_{timestamp}.html"
+        )
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
             f.write(generated_html)
 
-        return HTMLResponse(content=generated_html)
+        return HTMLResponse(
+            content=generated_html
+        )
 
     except Exception as e:
 
         return HTMLResponse(
-            content=f'''
+            content=f"""
             <html>
             <body style="background:#111;color:white;font-family:Arial;padding:40px;">
-                <h1>Generation Error</h1>
-                <p>{str(e)}</p>
+                <h1>Server Error</h1>
+                <pre>{str(e)}</pre>
             </body>
             </html>
-            '''
+            """
         )
 
-# =====================================
+# =========================================
 # HEALTH CHECK
-# =====================================
+# =========================================
 
 @app.get("/health")
 async def health():
