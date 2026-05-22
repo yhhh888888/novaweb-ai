@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NovaWeb AI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#050816;
+    color:white;
+    font-family:Arial,sans-serif;
+    overflow:hidden;
+}
+
+/* ========================= */
+/* NAVBAR */
+/* ========================= */
+
+.navbar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:70px;
+    background:#0b1023;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 30px;
+
+    z-index:1000;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+
+    background:linear-gradient(90deg,#00ffcc,#00aaff);
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.nav-right{
+    color:#94a3b8;
+}
+
+/* ========================= */
+/* MAIN LAYOUT */
+/* ========================= */
+
+.container{
+    display:flex;
+    height:100vh;
+    padding-top:70px;
+}
+
+.sidebar{
+    width:35%;
+    background:#0b1023;
+    padding:40px;
+    border-right:1px solid rgba(255,255,255,0.08);
+
+    overflow-y:auto;
+}
+
+.preview{
+    width:65%;
+    background:#0f172a;
+    padding:20px;
+    position:relative;
+}
+
+/* ========================= */
+/* TEXT */
+/* ========================= */
+
+h1{
+    font-size:42px;
+    margin-bottom:15px;
+
+    background:linear-gradient(90deg,#00ffcc,#00aaff);
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin-bottom:30px;
+    line-height:1.6;
+}
+
+/* ========================= */
+/* INPUT */
+/* ========================= */
+
+textarea{
+    width:100%;
+    height:180px;
+
+    background:#111827;
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    color:white;
+
+    padding:20px;
+
+    border-radius:16px;
+
+    resize:none;
+
+    font-size:16px;
+
+    outline:none;
+}
+
+textarea:focus{
+    border:1px solid #00ffcc;
+    box-shadow:0 0 20px rgba(0,255,204,0.3);
+}
+
+/* ========================= */
+/* BUTTONS */
+/* ========================= */
+
+.generate-btn,
+.download-btn{
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:18px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:linear-gradient(90deg,#00ffcc,#00aaff);
+
+    color:black;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.generate-btn:hover,
+.download-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 0 25px rgba(0,255,204,0.4);
+}
+
+/* ========================= */
+/* PRESETS */
+/* ========================= */
+
+.presets{
+    margin-top:35px;
+}
+
+.preset-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:15px;
+}
+
+.preset{
+    background:#111827;
+
+    padding:18px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    transition:0.3s;
+
+    border:1px solid rgba(255,255,255,0.05);
+}
+
+.preset:hover{
+
+    transform:translateY(-3px);
+
+    border:1px solid #00ffcc;
+
+    box-shadow:0 0 20px rgba(0,255,204,0.2);
+}
+
+/* ========================= */
+/* PREVIEW */
+/* ========================= */
+
+iframe{
+    width:100%;
+    height:100%;
+    border:none;
+    border-radius:18px;
+    background:white;
+}
+
+/* ========================= */
+/* LOADING */
+/* ========================= */
+
+.loading{
+    position:absolute;
+
+    top:50%;
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    display:none;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:20px;
+}
+
+.spinner{
+    width:70px;
+    height:70px;
+
+    border:6px solid rgba(255,255,255,0.1);
+
+    border-top:6px solid #00ffcc;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+    100%{
+        transform:rotate(360deg);
+    }
+}
+
+.loading-text{
+    color:#00ffcc;
+    font-size:22px;
+}
+
+/* ========================= */
+/* FOOTER */
+/* ========================= */
+
+.footer{
+    margin-top:40px;
+    color:#64748b;
+    font-size:14px;
+    text-align:center;
+}
+
+/* ========================= */
+/* MOBILE */
+/* ========================= */
+
+@media(max-width:900px){
+
+    body{
+        overflow:auto;
+    }
+
+    .container{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        height:auto;
+    }
+
+    .preview{
+        width:100%;
+        height:80vh;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <div class="logo">
+        NovaWeb AI
+    </div>
+
+    <div class="nav-right">
+        AI Landing Page Generator ⚡
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="sidebar">
+
+        <h1>Generate Websites Instantly</h1>
+
+        <p class="subtitle">
+            Create beautiful AI-generated landing pages in seconds.
+        </p>
+
+        <form id="generate-form">
+
+            <textarea
+                id="prompt"
+                name="prompt"
+                placeholder="Describe your dream website..."
+            ></textarea>
+
+            <button
+                type="submit"
+                class="generate-btn"
+            >
+                Generate Website
+            </button>
+
+            <button
+                type="button"
+                class="download-btn"
+                onclick="downloadHTML()"
+            >
+                Download HTML
+            </button>
+
+        </form>
+
+        <div class="presets">
+
+            <h2>Quick Presets</h2>
+
+            <div class="preset-grid">
+
+                <div class="preset"
+                onclick="setPrompt('Create a futuristic AI startup landing page')">
+                    AI Startup
+                </div>
+
+                <div class="preset"
+                onclick="setPrompt('Create a luxury portfolio website')">
+                    Portfolio
+                </div>
+
+                <div class="preset"
+                onclick="setPrompt('Create a cyberpunk gaming landing page')">
+                    Gaming
+                </div>
+
+                <div class="preset"
+                onclick="setPrompt('Create a modern restaurant landing page')">
+                    Restaurant
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer">
+            Powered by NovaWeb AI ⚡
+        </div>
+
+    </div>
+
+    <div class="preview">
+
+        <div class="loading" id="loading">
+
+            <div class="spinner"></div>
+
+            <div class="loading-text">
+                Generating Website...
+            </div>
+
+        </div>
+
+        <iframe id="preview-frame"></iframe>
+
+    </div>
+
+</div>
+
+<script>
+
+let generatedHTML = "";
+
+function setPrompt(text){
+
+    document.getElementById("prompt").value = text;
+}
+
+document.getElementById("generate-form")
+.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const loading =
+    document.getElementById("loading");
+
+    loading.style.display = "flex";
+
+    const prompt =
+    document.getElementById("prompt").value;
+
+    const response = await fetch("/generate", {
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":
+            "application/x-www-form-urlencoded"
+        },
+
+        body:new URLSearchParams({
+            prompt:prompt
+        })
+
+    });
+
+    generatedHTML = await response.text();
+
+    const iframe =
+    document.getElementById("preview-frame");
+
+    iframe.srcdoc = generatedHTML;
+
+    loading.style.display = "none";
+
+});
+
+function downloadHTML(){
+
+    if(!generatedHTML){
+
+        alert("Generate a website first.");
+
+        return;
+    }
+
+    const blob = new Blob(
+        [generatedHTML],
+        {type:"text/html"}
+    );
+
+    const a =
+    document.createElement("a");
+
+    a.href =
+    URL.createObjectURL(blob);
+
+    a.download =
+    "novaweb-site.html";
+
+    a.click();
+}
+
+</script>
+
+</body>
+</html>
